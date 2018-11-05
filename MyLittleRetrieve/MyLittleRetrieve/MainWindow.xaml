@@ -1,0 +1,182 @@
+﻿<Window x:Class="MyLittleRetrieve.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyLittleRetrieve"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        mc:Ignorable="d"
+        Title="MyLittleRetrieve" Height="650" Width="800"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Closed="MainWindowOnClosed">
+    <DockPanel Grid.IsSharedSizeScope="True" LastChildFill="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" x:Name="InputContainer">
+                <DockPanel x:Name="DocumentsPanel" HorizontalAlignment="Stretch"
+                    LastChildFill="True"
+                    VerticalAlignment="Top" Margin="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition SharedSizeGroup="A"/>
+                        </Grid.ColumnDefinitions>
+                        <Label x:Name="DocumentsLabel" Grid.Column="0">Documents:</Label>
+                    </Grid>
+                    <TextBox x:Name="DocumentsTextBox" HorizontalAlignment="Stretch"
+                     GotFocus="DocumentsTextBoxOnGotFocus" 
+                     TextChanged="DocumentsTextBoxOnTextChanged"/>
+                </DockPanel>
+                <Grid>
+                    <Button x:Name="InitializeButton" IsEnabled="True" Content="Initialize" Margin="10" Click="InitializeButtonClick" />
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="1" x:Name="LoadingContainer" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                <StackPanel.Style>
+                    <Style TargetType="FrameworkElement">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding EngineInitialized}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <fa:ImageAwesome Icon="Refresh" Spin="True" 
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Center"
+                                 Height="48" Width="48" />
+            </StackPanel>
+            <DockPanel Grid.Row="1" x:Name="OutputContainer" LastChildFill="True">
+                <DockPanel.Style>
+                    <Style TargetType="FrameworkElement">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding EngineInitialized}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <StackPanel DockPanel.Dock="Top">
+                    <DockPanel>
+                        <Grid x:Name="IndicesGrid" Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <Label x:Name="InvertedIndexLabel">Inverted Index</Label>
+                                <TreeView x:Name="InvertedIndexTreeView" MaxHeight="100"
+                              ItemsSource="{Binding Path=InvertedIndex}"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <TreeView.ItemTemplate>
+                                        <HierarchicalDataTemplate ItemsSource="{Binding Path=Value}">
+                                            <TextBlock FontWeight="Bold" Text="{Binding Path=Key}" />
+                                            <HierarchicalDataTemplate.ItemTemplate>
+                                                <DataTemplate>
+                                                    <ListBox ItemsSource="{Binding Value}"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition SharedSizeGroup="B"/>
+                                                                <ColumnDefinition />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Label Content="{Binding Key.Name}" Grid.Column="0" />
+                                                            <Label Content="{Binding Value}" Grid.Column="1" />
+                                                        </Grid>
+                                                    </ListBox>
+                                                </DataTemplate>
+                                            </HierarchicalDataTemplate.ItemTemplate>
+                                        </HierarchicalDataTemplate>
+                                    </TreeView.ItemTemplate>
+                                </TreeView>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <Label x:Name="NonInvertedIndexLabel">NonInverted Index</Label>
+                                <TreeView x:Name="NonInvertedIndexTreeView" MaxHeight="100"
+                              ItemsSource="{Binding Path=NonInvertedIndex}"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <TreeView.Resources>
+                                        <Style TargetType="TreeViewItem">
+                                            <Setter Property="Focusable" Value="False" />
+                                        </Style>
+                                    </TreeView.Resources>
+                                    <TreeView.ItemContainerStyle>
+                                        <Style TargetType="{x:Type TreeViewItem}">
+                                            <Setter Property="Focusable" Value="False" />
+                                        </Style>
+                                    </TreeView.ItemContainerStyle>
+                                    <TreeView.ItemTemplate>
+                                        <HierarchicalDataTemplate ItemsSource="{Binding Path=Value}">
+                                            <TextBlock FontWeight="Bold" Text="{Binding Path=Key.Name}" />
+                                            <HierarchicalDataTemplate.ItemTemplate>
+                                                <DataTemplate>
+                                                    <ListView ItemsSource="{Binding Value}"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition SharedSizeGroup="B"/>
+                                                                <ColumnDefinition />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Label Content="{Binding Key}" Grid.Column="0" />
+                                                            <Label Content="{Binding Value}" Grid.Column="1" />
+                                                        </Grid>
+                                                    </ListView>
+                                                </DataTemplate>
+                                            </HierarchicalDataTemplate.ItemTemplate>
+                                        </HierarchicalDataTemplate>
+                                    </TreeView.ItemTemplate>
+                                </TreeView>
+                            </StackPanel>
+                        </Grid>
+                    </DockPanel>
+                    <DockPanel x:Name="QueriesPanel" HorizontalAlignment="Stretch"
+                           LastChildFill="True"
+                           VerticalAlignment="Top" Margin="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition SharedSizeGroup="A"/>
+                            </Grid.ColumnDefinitions>
+                            <Label x:Name="QueriesLabel" Grid.Column="0">Query-File:</Label>
+                        </Grid>
+                        <TextBox x:Name="QueriesTextBox" HorizontalAlignment="Stretch"
+                             GotFocus="QueriesTextBoxOnGotFocus" TextChanged="QueriesTextBoxOnTextChanged">
+                        </TextBox>
+                    </DockPanel>
+                    <Grid>
+                        <Button x:Name="QueryButton" IsEnabled="False" Content="Run" Margin="10" Click="QueryButtonClick" />
+                    </Grid>
+                    <DockPanel x:Name="CustomQueriesPanel" HorizontalAlignment="Stretch"
+                           LastChildFill="True"
+                           VerticalAlignment="Top" Margin="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition SharedSizeGroup="A"/>
+                            </Grid.ColumnDefinitions>
+                            <Label x:Name="CustomQueryLabel" Grid.Column="0">Custom Query:</Label>
+                        </Grid>
+                        <TextBox x:Name="CustomQueriesTextBox" HorizontalAlignment="Stretch"
+                             TextChanged="CustomQueriesTextBoxTextChanged"
+                             MinLines="2" MinHeight="50"></TextBox>
+                    </DockPanel>
+                </StackPanel>
+                <Grid DockPanel.Dock="Bottom" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0">Result (Double click to open)</Label>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Ranking}" 
+                          IsReadOnly="True" VerticalScrollBarVisibility="Visible">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <EventSetter Event="MouseDoubleClick" Handler="RowMouseDoubleClick"/>
+                            </Style>
+                        </DataGrid.Resources>
+                    </DataGrid>
+                </Grid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>
